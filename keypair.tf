@@ -1,0 +1,4 @@
+resource "aws_key_pair" "key_pair" {
+  key_name   = upper("${var.product_name} - key")
+  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDAuLr91Zj4VM0Yvhp45M1y9YQW5BNFGV6sdTogomfJLMDBzif2GcZkjEK8byEJqGaqNze/2DGskzD6Zbro22oi/vdYyXMqTXvkcUF4pQuhJB/8g1KL8c2JRt+f2QGpxj8BfKVDzRexh2854dD9SN/byRovpDqLJbNhVDNhuQMSC4gjxxCbK8r1mBTEBhJK9B37YgYEGBRe/kJa5k8kXmqkufPy5G+Dsc2h2jWP8pE4NvaT3sTys7TspQnfMgM/fQbIWBkInZkVkRy0kSh0hIu+T47p/60NeWIGydUi/Bm3xdutBXjhry4VteTpXSCMqNZ2wLDx4ucPmhmTjy6nyLpcsif9wW8xuDrHTUdDBidMXF5epR7gqevIQhqIEa94W6dhPjIVMx982nXzDHNavOJizxDh2kjwV7dIxnFJNxtYy58XZhsDPQZMBpkIGggf0XQAqlMKNVhk8SOnNgiEvaOzxNKQqJfAhelwyGB16AUOWiXwk95buIAVpPoBLam3Q0U= vtorosyan@VTorosyan-nb"
+}

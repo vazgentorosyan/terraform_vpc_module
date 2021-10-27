@@ -6,10 +6,11 @@ terraform {
     }
   }
   backend "s3" {
-    bucket         = "terraform-tfstate-test-02"
+    bucket         = "terraform-tfstate-test-01"
     key            = "vpc.tfstate"
     dynamodb_table = "TF-STATE-LOCK"
     region         = "us-east-1"
+    hash_key       = "LockID"
   }
 }
 provider "aws" {

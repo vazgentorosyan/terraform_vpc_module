@@ -2,15 +2,14 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 3.0"
+      version = "~> 4.0"
     }
   }
   backend "s3" {
     bucket         = "terraform-tfstate-test-01"
-    key            = "vpc.tfstate"
+    key            = "TERRAFORM/vpc.tfstate"
     dynamodb_table = "TF-STATE-LOCK"
     region         = "us-east-1"
-    hash_key       = "LockID"
   }
 }
 provider "aws" {

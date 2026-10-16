@@ -1,5 +1,5 @@
 resource "aws_security_group" "public_sg" {
-  name = "public_security_group"
+  name   = "public_security_group"
   vpc_id = aws_vpc.vpc.id
 
   dynamic "ingress" {
@@ -28,7 +28,7 @@ resource "aws_security_group" "public_sg" {
 }
 
 resource "aws_security_group" "nat_sg" {
-  name = "nat_security_group"
+  name   = "nat_security_group"
   vpc_id = aws_vpc.vpc.id
 
   dynamic "ingress" {

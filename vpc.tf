@@ -3,7 +3,7 @@ data "aws_availability_zones" "available" {
 }
 
 resource "aws_eip" "elastic_ip1" {
-    vpc      = true
+  domain = "vpc"
 }
 
 resource "aws_vpc" "vpc" {
@@ -58,7 +58,7 @@ resource "aws_route_table_association" "igw_route_tb_assoc" {
   count = length(aws_subnet.PublicSubnet)
 
   route_table_id = aws_route_table.igw_rt.id
-  subnet_id      = element(aws_subnet.PublicSubnet.*.id, count.index)
+  subnet_id      = aws_subnet.PublicSubnet[count.index].id
 }
 
 #####################################
@@ -80,9 +80,9 @@ resource "aws_subnet" "NatSubnet" {
 
 resource "aws_nat_gateway" "nat_gateway" {
   allocation_id = aws_eip.elastic_ip1.id
-  subnet_id = aws_subnet.NatSubnet.0.id
+  subnet_id     = aws_subnet.NatSubnet[0].id
   tags = merge({
-    Name = "NAT-SUBNET-${upper(aws_subnet.NatSubnet.0.availability_zone)}"
+    Name = "NAT-SUBNET-${upper(aws_subnet.NatSubnet[0].availability_zone)}"
   }, var.tags)
 }
 
@@ -102,7 +102,7 @@ resource "aws_route" "nat_gw_route" {
 
 resource "aws_route_table_association" "nat_gw_assoc" {
   count          = length(aws_subnet.NatSubnet)
-  subnet_id      = element(aws_subnet.NatSubnet.*.id, count.index)
+  subnet_id      = aws_subnet.NatSubnet[count.index].id
   route_table_id = aws_route_table.nat_rt.id
 }
 
@@ -135,6 +135,6 @@ resource "aws_route_table" "private_rt" {
 
 resource "aws_route_table_association" "private_rt_assoc" {
   count          = length(aws_subnet.PrivateSubnet)
-  subnet_id      = element(aws_subnet.PrivateSubnet.*.id, count.index)
+  subnet_id      = aws_subnet.PrivateSubnet[count.index].id
   route_table_id = aws_route_table.private_rt.id
 }

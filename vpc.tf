@@ -1,140 +1,89 @@
-data "aws_availability_zones" "available" {
-  state = "available"
-}
+module "vpc" {
+  source = "./modules/vpc"
 
-resource "aws_eip" "elastic_ip1" {
-  domain = "vpc"
-}
-
-resource "aws_vpc" "vpc" {
-  cidr_block           = var.cidr_block
-  enable_dns_support   = true
-  enable_dns_hostnames = true
-
-  tags = merge({
-    Name = "${upper(var.product_name)}-VPC"
-  }, var.tags)
+  product_name = var.product_name
+  cidr_block   = var.cidr_block
+  public_cidr  = var.public_cidr
+  private_cidr = var.private_cidr
+  nat_cidr     = var.nat_cidr
+  tags         = var.tags
 }
 
 ########################################
-####### Public subnet resources ########
+# State migration blocks (preserves state)
 ########################################
 
-resource "aws_subnet" "PublicSubnet" {
-  count = length(data.aws_availability_zones.available.names)
-
-  cidr_block              = cidrsubnet(var.public_cidr, 6, count.index)
-  map_public_ip_on_launch = false
-  vpc_id                  = aws_vpc.vpc.id
-  availability_zone       = element(data.aws_availability_zones.available.names, count.index)
-
-  tags = merge({
-    Name = "PUBLIC-SUBNET-${upper(data.aws_availability_zones.available.names[count.index])}"
-  }, var.tags)
+moved {
+  from = aws_vpc.vpc
+  to   = module.vpc.aws_vpc.vpc
 }
 
-resource "aws_internet_gateway" "main_gateway" {
-  vpc_id = aws_vpc.vpc.id
-  tags = merge({
-    Name = "${upper(var.product_name)}-VPC-IGW"
-  }, var.tags)
+moved {
+  from = aws_eip.elastic_ip1
+  to   = module.vpc.aws_eip.elastic_ip1
 }
 
-resource "aws_route_table" "igw_rt" {
-  vpc_id = aws_vpc.vpc.id
-
-  tags = merge({
-    Name = "${upper(var.product_name)}-RT-PUBLIC"
-  }, var.tags)
+moved {
+  from = aws_internet_gateway.main_gateway
+  to   = module.vpc.aws_internet_gateway.main_gateway
 }
 
-resource "aws_route" "public_igw_route" {
-  route_table_id         = aws_route_table.igw_rt.id
-  destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = aws_internet_gateway.main_gateway.id
+moved {
+  from = aws_subnet.PublicSubnet
+  to   = module.vpc.aws_subnet.PublicSubnet
 }
 
-resource "aws_route_table_association" "igw_route_tb_assoc" {
-  count = length(aws_subnet.PublicSubnet)
-
-  route_table_id = aws_route_table.igw_rt.id
-  subnet_id      = aws_subnet.PublicSubnet[count.index].id
+moved {
+  from = aws_route_table.igw_rt
+  to   = module.vpc.aws_route_table.igw_rt
 }
 
-#####################################
-####### Nat subnet resources ########
-#####################################
-
-resource "aws_subnet" "NatSubnet" {
-  count = length(data.aws_availability_zones.available.names)
-
-  cidr_block              = cidrsubnet(var.nat_cidr, 6, count.index)
-  map_public_ip_on_launch = false
-  vpc_id                  = aws_vpc.vpc.id
-  availability_zone       = element(data.aws_availability_zones.available.names, count.index)
-
-  tags = merge({
-    Name = "NAT-SUBNET-${upper(data.aws_availability_zones.available.names[count.index])}"
-  }, var.tags)
+moved {
+  from = aws_route.public_igw_route
+  to   = module.vpc.aws_route.public_igw_route
 }
 
-resource "aws_nat_gateway" "nat_gateway" {
-  allocation_id = aws_eip.elastic_ip1.id
-  subnet_id     = aws_subnet.NatSubnet[0].id
-  tags = merge({
-    Name = "NAT-SUBNET-${upper(aws_subnet.NatSubnet[0].availability_zone)}"
-  }, var.tags)
+moved {
+  from = aws_route_table_association.igw_route_tb_assoc
+  to   = module.vpc.aws_route_table_association.igw_route_tb_assoc
 }
 
-resource "aws_route_table" "nat_rt" {
-  vpc_id = aws_vpc.vpc.id
-
-  tags = merge({
-    Name = "${upper(var.product_name)}-RT-NAT"
-  }, var.tags)
+moved {
+  from = aws_subnet.NatSubnet
+  to   = module.vpc.aws_subnet.NatSubnet
 }
 
-resource "aws_route" "nat_gw_route" {
-  route_table_id         = aws_route_table.nat_rt.id
-  destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id         = aws_nat_gateway.nat_gateway.id
+moved {
+  from = aws_nat_gateway.nat_gateway
+  to   = module.vpc.aws_nat_gateway.nat_gateway
 }
 
-resource "aws_route_table_association" "nat_gw_assoc" {
-  count          = length(aws_subnet.NatSubnet)
-  subnet_id      = aws_subnet.NatSubnet[count.index].id
-  route_table_id = aws_route_table.nat_rt.id
+moved {
+  from = aws_route_table.nat_rt
+  to   = module.vpc.aws_route_table.nat_rt
 }
 
-
-#########################################
-####### Private subnet resources ########
-#########################################
-
-
-resource "aws_subnet" "PrivateSubnet" {
-  count = length(data.aws_availability_zones.available.names)
-
-  cidr_block              = cidrsubnet(var.private_cidr, 6, count.index)
-  map_public_ip_on_launch = false
-  vpc_id                  = aws_vpc.vpc.id
-  availability_zone       = element(data.aws_availability_zones.available.names, count.index)
-
-  tags = merge({
-    Name = "PRIVATE-SUBNET-${upper(data.aws_availability_zones.available.names[count.index])}"
-  }, var.tags)
+moved {
+  from = aws_route.nat_gw_route
+  to   = module.vpc.aws_route.nat_gw_route
 }
 
-resource "aws_route_table" "private_rt" {
-  vpc_id = aws_vpc.vpc.id
-
-  tags = merge({
-    Name = "${upper(var.product_name)}-RT-PRIVATE"
-  }, var.tags)
+moved {
+  from = aws_route_table_association.nat_gw_assoc
+  to   = module.vpc.aws_route_table_association.nat_gw_assoc
 }
 
-resource "aws_route_table_association" "private_rt_assoc" {
-  count          = length(aws_subnet.PrivateSubnet)
-  subnet_id      = aws_subnet.PrivateSubnet[count.index].id
-  route_table_id = aws_route_table.private_rt.id
+moved {
+  from = aws_subnet.PrivateSubnet
+  to   = module.vpc.aws_subnet.PrivateSubnet
+}
+
+moved {
+  from = aws_route_table.private_rt
+  to   = module.vpc.aws_route_table.private_rt
+}
+
+moved {
+  from = aws_route_table_association.private_rt_assoc
+  to   = module.vpc.aws_route_table_association.private_rt_assoc
 }

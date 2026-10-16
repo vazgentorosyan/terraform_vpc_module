@@ -97,7 +97,7 @@ resource "aws_route_table" "nat_rt" {
 resource "aws_route" "nat_gw_route" {
   route_table_id         = aws_route_table.nat_rt.id
   destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = aws_nat_gateway.nat_gateway.id
+  nat_gateway_id         = aws_nat_gateway.nat_gateway.id
 }
 
 resource "aws_route_table_association" "nat_gw_assoc" {

@@ -80,9 +80,9 @@ resource "aws_subnet" "NatSubnet" {
 
 resource "aws_nat_gateway" "nat_gateway" {
   allocation_id = aws_eip.elastic_ip1.id
-  subnet_id     = aws_subnet.NatSubnet[0].id
+  subnet_id     = aws_subnet.PublicSubnet[0].id
   tags = merge({
-    Name = "NAT-SUBNET-${upper(aws_subnet.NatSubnet[0].availability_zone)}"
+    Name = "NAT-GW-${upper(aws_subnet.PublicSubnet[0].availability_zone)}"
   }, var.tags)
 }
 

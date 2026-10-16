@@ -2,7 +2,7 @@ variable "product_name" {
   default = "test-backend-project"
 }
 variable "aws_region" {
-  default = "us-east-1"
+  default = "eu-north-1"
 }
 variable "cidr_block" {
   type    = string

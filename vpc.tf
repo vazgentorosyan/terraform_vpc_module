@@ -7,6 +7,8 @@ module "vpc" {
   private_cidr = var.private_cidr
   nat_cidr     = var.nat_cidr
   tags         = var.tags
+
+  endpoints = ["ssm", "ssmmessages", "ec2messages"]
 }
 
 ########################################

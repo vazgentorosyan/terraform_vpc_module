@@ -33,3 +33,15 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "endpoints" {
+  description = "List of endpoint services (e.g. ['ssm', 'ssmmessages', 'ec2messages']) or map of endpoint configurations"
+  type        = any
+  default     = []
+}
+
+variable "enable_ssm_endpoints" {
+  description = "Convenience flag to enable SSM endpoints (ssm, ssmmessages, ec2messages)"
+  type        = bool
+  default     = false
+}

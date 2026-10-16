@@ -18,6 +18,11 @@ output "nat_subnet_ids" {
   value       = module.vpc.nat_subnet_ids
 }
 
+output "vpc_endpoint_ids" {
+  description = "Map of created VPC interface endpoint names to IDs"
+  value       = module.vpc.endpoint_ids
+}
+
 output "ec2_public_ip" {
   description = "Public IP of the public EC2 instance"
   value       = try(module.ec2_instances.public_ips["public_instance"], null)

@@ -47,3 +47,14 @@ output "availability_zones" {
   description = "List of availability zones used"
   value       = data.aws_availability_zones.available.names
 }
+
+output "endpoint_ids" {
+  description = "Map of created VPC interface endpoint names to IDs"
+  value       = { for k, v in aws_vpc_endpoint.interface : k => v.id }
+}
+
+output "endpoint_security_group_id" {
+  description = "Security group ID for VPC interface endpoints"
+  value       = try(aws_security_group.vpc_endpoints_sg[0].id, null)
+}
+

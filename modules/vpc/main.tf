@@ -136,3 +136,118 @@ resource "aws_route_table_association" "private_rt_assoc" {
   subnet_id      = aws_subnet.PrivateSubnet[count.index].id
   route_table_id = aws_route_table.private_rt.id
 }
+
+#########################################
+####### VPC Endpoints resources #########
+#########################################
+
+data "aws_region" "current" {}
+
+locals {
+  # Normalize list of endpoint service names into a map
+  endpoints_from_list = try(
+    { for ep in var.endpoints : ep => {
+      service             = ep
+      endpoint_type       = ep == "s3" ? "Gateway" : "Interface"
+      private_dns_enabled = ep == "s3" ? false : true
+    } if can([for x in var.endpoints : x]) },
+    {}
+  )
+
+  # Support map of endpoint configurations
+  endpoints_from_map = try(
+    { for k, v in var.endpoints : k => v if can(keys(var.endpoints)) },
+    {}
+  )
+
+  ssm_default_endpoints = var.enable_ssm_endpoints ? {
+    ssm = {
+      service             = "ssm"
+      endpoint_type       = "Interface"
+      private_dns_enabled = true
+    }
+    ssmmessages = {
+      service             = "ssmmessages"
+      endpoint_type       = "Interface"
+      private_dns_enabled = true
+    }
+    ec2messages = {
+      service             = "ec2messages"
+      endpoint_type       = "Interface"
+      private_dns_enabled = true
+    }
+  } : {}
+
+  all_endpoints = merge(
+    local.ssm_default_endpoints,
+    local.endpoints_from_list,
+    local.endpoints_from_map
+  )
+
+  interface_endpoints = {
+    for k, v in local.all_endpoints : k => v
+    if try(v.endpoint_type, "Interface") == "Interface"
+  }
+
+  gateway_endpoints = {
+    for k, v in local.all_endpoints : k => v
+    if try(v.endpoint_type, "Interface") == "Gateway"
+  }
+}
+
+resource "aws_security_group" "vpc_endpoints_sg" {
+  count       = length(local.interface_endpoints) > 0 ? 1 : 0
+  name        = "${var.product_name}-vpc-endpoints-sg"
+  description = "Security group for VPC Interface Endpoints"
+  vpc_id      = aws_vpc.vpc.id
+
+  ingress {
+    description = "Allow HTTPS from VPC"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = [aws_vpc.vpc.cidr_block]
+  }
+
+  egress {
+    description = "Allow all outbound"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = merge({
+    Name = "${upper(var.product_name)}-VPC-ENDPOINTS-SG"
+  }, var.tags)
+}
+
+resource "aws_vpc_endpoint" "interface" {
+  for_each = local.interface_endpoints
+
+  vpc_id            = aws_vpc.vpc.id
+  service_name      = startswith(try(each.value.service, each.key), "com.amazonaws.") ? try(each.value.service, each.key) : "com.amazonaws.${data.aws_region.current.name}.${try(each.value.service, each.key)}"
+  vpc_endpoint_type = "Interface"
+
+  subnet_ids          = try(each.value.subnet_ids, aws_subnet.PrivateSubnet[*].id)
+  security_group_ids  = try(each.value.security_group_ids, [aws_security_group.vpc_endpoints_sg[0].id])
+  private_dns_enabled = try(each.value.private_dns_enabled, true)
+
+  tags = merge({
+    Name = "${upper(var.product_name)}-VPC-ENDPOINT-${upper(each.key)}"
+  }, var.tags)
+}
+
+resource "aws_vpc_endpoint" "gateway" {
+  for_each = local.gateway_endpoints
+
+  vpc_id            = aws_vpc.vpc.id
+  service_name      = startswith(try(each.value.service, each.key), "com.amazonaws.") ? try(each.value.service, each.key) : "com.amazonaws.${data.aws_region.current.name}.${try(each.value.service, each.key)}"
+  vpc_endpoint_type = "Gateway"
+
+  route_table_ids = try(each.value.route_table_ids, [aws_route_table.private_rt.id])
+
+  tags = merge({
+    Name = "${upper(var.product_name)}-VPC-ENDPOINT-${upper(each.key)}"
+  }, var.tags)
+}

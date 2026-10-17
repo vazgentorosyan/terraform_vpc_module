@@ -1,4 +1,5 @@
 module "ec2_instances" {
+  count  = var.create_ec2 ? 1 : 0
   source = "./modules/ec2"
 
   ami                  = data.aws_ami.amazon_linux.id

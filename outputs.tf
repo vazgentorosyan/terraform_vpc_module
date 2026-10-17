@@ -25,10 +25,25 @@ output "vpc_endpoint_ids" {
 
 output "ec2_public_ip" {
   description = "Public IP of the public EC2 instance"
-  value       = try(module.ec2_instances.public_ips["public_instance"], null)
+  value       = try(module.ec2_instances[0].public_ips["public_instance"], null)
 }
 
 output "ec2_instance_ids" {
   description = "Map of all created EC2 instance names to IDs"
-  value       = module.ec2_instances.instance_ids
+  value       = try(module.ec2_instances[0].instance_ids, {})
+}
+
+output "eks_cluster_name" {
+  description = "The name of the EKS cluster"
+  value       = try(module.eks[0].cluster_name, null)
+}
+
+output "eks_cluster_endpoint" {
+  description = "Endpoint for your Kubernetes API server"
+  value       = try(module.eks[0].cluster_endpoint, null)
+}
+
+output "eks_cluster_security_group_id" {
+  description = "Security group ID attached to the EKS cluster"
+  value       = try(module.eks[0].cluster_security_group_id, null)
 }

@@ -226,7 +226,7 @@ resource "aws_vpc_endpoint" "interface" {
   for_each = local.interface_endpoints
 
   vpc_id            = aws_vpc.vpc.id
-  service_name      = startswith(try(each.value.service, each.key), "com.amazonaws.") ? try(each.value.service, each.key) : "com.amazonaws.${data.aws_region.current.name}.${try(each.value.service, each.key)}"
+  service_name      = startswith(try(each.value.service, each.key), "com.amazonaws.") ? try(each.value.service, each.key) : "com.amazonaws.${data.aws_region.current.region}.${try(each.value.service, each.key)}"
   vpc_endpoint_type = "Interface"
 
   subnet_ids          = try(each.value.subnet_ids, aws_subnet.PrivateSubnet[*].id)
@@ -242,7 +242,7 @@ resource "aws_vpc_endpoint" "gateway" {
   for_each = local.gateway_endpoints
 
   vpc_id            = aws_vpc.vpc.id
-  service_name      = startswith(try(each.value.service, each.key), "com.amazonaws.") ? try(each.value.service, each.key) : "com.amazonaws.${data.aws_region.current.name}.${try(each.value.service, each.key)}"
+  service_name      = startswith(try(each.value.service, each.key), "com.amazonaws.") ? try(each.value.service, each.key) : "com.amazonaws.${data.aws_region.current.region}.${try(each.value.service, each.key)}"
   vpc_endpoint_type = "Gateway"
 
   route_table_ids = try(each.value.route_table_ids, [aws_route_table.private_rt.id])

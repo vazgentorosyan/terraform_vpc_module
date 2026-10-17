@@ -75,22 +75,17 @@ When the user asks to create, configure, or adjust an Amazon EKS cluster:
    - `subnet_ids = module.vpc.nat_subnet_ids` (Places nodes in NAT-routed subnets for secure internet outbound access)
    - `control_plane_subnet_ids = module.vpc.nat_subnet_ids`
 
-### Cost Optimization & Node Sizing Recommendations
+#### Cost Optimization & Node Sizing Recommendations (AWS Free Tier)
 
-Because this is a demo/learning sandbox, avoid high-cost node configurations:
+> [!IMPORTANT]
+> **Free Tier Account Enforcement**: This AWS account strictly enforces Free Tier eligibility. Launching non-eligible instance types will fail with:  
+> `InvalidParameterCombination - The specified instance type is not eligible for Free Tier.`
 
 - **Target Node Count**: Keep the cluster minimal — **3 nodes** (e.g., `desired_size = 3`, `min_size = 1`, `max_size = 3`).
-- **Recommended Node Types**:
-  1. **Primary Recommendation (AWS Graviton - ARM64)**:
-     - **Instance Type**: `t4g.medium` (2 vCPU, 4 GiB Memory)
-     - **AMI Type**: `AL2023_ARM_64_STANDARD`
-     - **Rationale**: Graviton2 `t4g.medium` is approximately **20% cheaper** than its x86 `t3.medium` equivalent while delivering superior compute performance, power efficiency, and 24 pod allocation capacity per node.
-  2. **Alternative (x86_64 Compatibility)**:
-     - **Instance Type**: `t3.medium` (2 vCPU, 4 GiB Memory)
-     - **AMI Type**: `AL2023_x86_64_STANDARD`
-     - **Rationale**: Use when workloads or legacy containers require x86_64 architecture.
-  3. **Why avoid `t4g.small` / `t3.small`?**:
-     - 2 GiB memory instances struggle under standard Kubernetes system daemon overhead (CoreDNS, kube-proxy, aws-node, EBS CSI driver) and quickly cause Out-Of-Memory (OOM) evictions. `t4g.medium` provides the sweet spot for minimal learning cluster stability.
+- **Free Tier Eligible Instance Type (Required)**:
+  - **Instance Type**: `t3.micro` (2 vCPU, 1 GiB Memory) — eligible for 750 hours/month Free Tier in `eu-north-1`.
+  - **AMI Type**: `AL2023_x86_64_STANDARD` (x86_64 architecture).
+  - **Do NOT use**: `t4g.medium`, `t3.medium`, or other non-free-tier instances on this account, as AutoScaling will fail to launch them.
 
 ### Reference EKS Configuration Pattern for `eks.tf`
 
@@ -98,7 +93,7 @@ Because this is a demo/learning sandbox, avoid high-cost node configurations:
 module "eks" {
   count   = var.create_eks ? 1 : 0
   source  = "terraform-aws-modules/eks/aws"
-  version = "~> 21.29"
+  version = "~> 21.0"
 
   name               = "${var.product_name}-eks"
   kubernetes_version = "1.32"
@@ -123,18 +118,18 @@ module "eks" {
     vpc-cni                = { before_compute = true }
   }
 
-  # Cost-optimized Managed Node Group
+  # Free Tier Eligible Managed Node Group
   eks_managed_node_groups = {
     demo_nodes = {
-      # Primary recommended cost-efficient Graviton instances:
-      ami_type       = "AL2023_ARM_64_STANDARD"
-      instance_types = ["t4g.medium"] # Alternative x86: ["t3.medium"] with AL2023_x86_64_STANDARD
+      # t3.micro is required for AWS Free Tier accounts:
+      ami_type       = "AL2023_x86_64_STANDARD"
+      instance_types = ["t3.micro"]
 
       min_size     = 1
       desired_size = 3
       max_size     = 3
 
-      capacity_type = "ON_DEMAND" # Use "SPOT" if ultra-cheap spot instances are desired for testing
+      capacity_type = "ON_DEMAND"
 
       tags = merge(var.tags, {
         Role = "worker-node"

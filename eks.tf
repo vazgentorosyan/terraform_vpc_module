@@ -4,7 +4,7 @@ module "eks" {
   version = "~> 21.29"
 
   name               = "${var.product_name}-eks"
-  kubernetes_version = "1.37"
+  kubernetes_version = "1.38"
 
   # Networking
   vpc_id                   = module.vpc.vpc_id
@@ -30,12 +30,12 @@ module "eks" {
     }
   }
 
-  # Cost-optimized Managed Node Group (AWS Graviton ARM64)
+  # Free Tier Eligible Managed Node Group (x86_64)
   eks_managed_node_groups = {
     demo_nodes = {
-      # Graviton2 t4g.medium: ~20% cheaper than t3.medium, superior performance & efficiency
-      ami_type       = "AL2023_ARM_64_STANDARD"
-      instance_types = ["t4g.medium"]
+      # t3.micro is AWS Free Tier eligible (required for Free Tier accounts)
+      ami_type       = "AL2023_x86_64_STANDARD"
+      instance_types = ["t3.micro"]
 
       min_size     = 1
       desired_size = 3

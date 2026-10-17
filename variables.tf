@@ -56,11 +56,11 @@ variable "ingress_rules" {
 variable "create_eks" {
   description = "Controls if the EKS cluster should be created"
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "create_ec2" {
   description = "Controls if the EC2 demo instances should be created"
   type        = bool
-  default     = true
+  default     = false
 }

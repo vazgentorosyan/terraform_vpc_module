@@ -69,7 +69,7 @@ The core infrastructure creates a custom VPC with a **three-tier subnet architec
 When the user asks to create, configure, or adjust an Amazon EKS cluster:
 
 1. **Target File**: Implement the cluster definition exclusively in [`eks.tf`](./eks.tf).
-2. **Reference Documentation**: Refer to [`.agent_instructions/EKS_README.md`](./.agent_instructions/EKS_README.md) for module reference, input variables, and official syntax of the `terraform-aws-modules/eks/aws` module (version `~> 21.0`).
+2. **Reference Documentation**: Refer to [`.agent_instructions/EKS_README.md`](./.agent_instructions/EKS_README.md) for module reference, input variables, and official syntax of the `terraform-aws-modules/eks/aws` module (version `~> 21.29`).
 3. **Subnet Placement**:
    - `vpc_id = module.vpc.vpc_id`
    - `subnet_ids = module.vpc.nat_subnet_ids` (Places nodes in NAT-routed subnets for secure internet outbound access)
@@ -98,7 +98,7 @@ Because this is a demo/learning sandbox, avoid high-cost node configurations:
 module "eks" {
   count   = var.create_eks ? 1 : 0
   source  = "terraform-aws-modules/eks/aws"
-  version = "~> 21.0"
+  version = "~> 21.29"
 
   name               = "${var.product_name}-eks"
   kubernetes_version = "1.32"

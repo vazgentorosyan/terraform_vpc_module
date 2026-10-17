@@ -47,7 +47,7 @@ Please note that we strive to provide a comprehensive suite of documentation for
 ```hcl
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "~> 21.0"
+  version = "~> 21.29"
 
   name               = "example"
   kubernetes_version = "1.33"
@@ -78,7 +78,7 @@ module "eks" {
 ```hcl
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "~> 21.0"
+  version = "~> 21.29"
 
   name               = "example"
   kubernetes_version = "1.33"
@@ -112,7 +112,7 @@ EKS Provisioned Control Plane allows you to provision a control plane with incre
 ```hcl
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "~> 21.0"
+  version = "~> 21.29"
 
   name               = "my-cluster"
   kubernetes_version = "1.33"
@@ -143,7 +143,7 @@ module "eks" {
 ```hcl
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "~> 21.0"
+  version = "~> 21.29"
 
   name               = "my-cluster"
   kubernetes_version = "1.33"
@@ -198,7 +198,7 @@ On clusters that were created prior to cluster access management (CAM) support, 
 ```hcl
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "~> 21.0"
+  version = "~> 21.29"
 
   # Truncated for brevity ...
 
@@ -234,7 +234,7 @@ locals {
 # SSM and IAM Roles Anywhere supported - SSM is default
 module "eks_hybrid_node_role" {
   source  = "terraform-aws-modules/eks/aws//modules/hybrid-node-role"
-  version = "~> 21.0"
+  version = "~> 21.29"
 
   tags = {
     Environment = "dev"
@@ -244,7 +244,7 @@ module "eks_hybrid_node_role" {
 
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "~> 21.0"
+  version = "~> 21.29"
 
   name               = "example"
   kubernetes_version = "1.33"
@@ -332,7 +332,7 @@ In order to enable EFA support, you will have to specify `enable_efa_support = t
 ```hcl
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "~> 21.0"
+  version = "~> 21.29"
 
   # Truncated for brevity ...
 

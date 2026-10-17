@@ -1,10 +1,10 @@
 module "eks" {
   count   = var.create_eks ? 1 : 0
   source  = "terraform-aws-modules/eks/aws"
-  version = "~> 21.0"
+  version = "~> 21.29"
 
   name               = "${var.product_name}-eks"
-  kubernetes_version = "1.32"
+  kubernetes_version = "1.37"
 
   # Networking
   vpc_id                   = module.vpc.vpc_id

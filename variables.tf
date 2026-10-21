@@ -54,7 +54,7 @@ variable "ingress_rules" {
 }
 
 variable "create_eks" {
-  description = "Controls if the EKS cluster should be created"
+  description = "Controls if the EKS cluster should be created by default"
   type        = bool
   default     = false
 }
